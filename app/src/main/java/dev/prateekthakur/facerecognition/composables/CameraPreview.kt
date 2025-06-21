@@ -6,14 +6,18 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraSelector.LENS_FACING_BACK
+import androidx.camera.core.CameraSelector.LENS_FACING_FRONT
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -21,14 +25,20 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.mlkit.vision.face.Face
 import dev.prateekthakur.facerecognition.screens.home.CameraFrameAnalyzer
 
 @Composable
-fun CameraPreviewView(lensFacing: Int = CameraSelector.LENS_FACING_BACK) {
+fun CameraPreviewView(lensFacing: Int = LENS_FACING_FRONT) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val cameraPermissionState = remember { mutableStateOf(checkCameraPermission(context)) }
+    var faces by remember { mutableStateOf<List<Face>>(emptyList()) }
+
+    val analyzer = CameraFrameAnalyzer {
+        faces = it
+    }
 
     LaunchedEffect(Unit) {
         if (!cameraPermissionState.value) {
@@ -36,14 +46,17 @@ fun CameraPreviewView(lensFacing: Int = CameraSelector.LENS_FACING_BACK) {
         }
     }
 
-    CameraAndroidView(lifecycleOwner, lensFacing)
+    CameraAndroidView(lifecycleOwner, lensFacing, analyzer = analyzer)
+    FaceOverlay(faces, imageWidth = analyzer.targetResolution.width, imageHeight = analyzer.targetResolution.height, isFrontCamera = lensFacing==LENS_FACING_FRONT)
 }
+
 
 
 @Composable
 private fun CameraAndroidView(
     lifecycleOwner: LifecycleOwner,
-    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+    lensFacing: Int = LENS_FACING_BACK,
+    analyzer: CameraFrameAnalyzer? = null,
     modifier: Modifier = Modifier
 ) {
     AndroidView(
@@ -65,12 +78,10 @@ private fun CameraAndroidView(
                     .requireLensFacing(lensFacing)
                     .build()
 
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
-                val analyzer = CameraFrameAnalyzer {
-
+                val imageAnalysis = ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
+                if(analyzer!=null){
+                    imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(ctx), analyzer)
                 }
-                imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(ctx), analyzer)
 
                 try {
                     cameraProvider.unbindAll()
