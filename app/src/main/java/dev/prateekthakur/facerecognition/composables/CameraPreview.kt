@@ -13,10 +13,16 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +42,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.face.Face
 import dev.prateekthakur.facerecognition.screens.home.CameraFrameAnalyzer
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraPreviewView(lensFacing: Int = LENS_FACING_FRONT) {
     val context = LocalContext.current
@@ -54,21 +61,31 @@ fun CameraPreviewView(lensFacing: Int = LENS_FACING_FRONT) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text("Matching face")
+        })
+    }) {
         Box(
-            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .height(400.dp)
-                .width(300.dp)
-                .clip(shape = RoundedCornerShape(16.dp))
+                .fillMaxSize()
+                .padding(it), contentAlignment = Alignment.Center
         ) {
-            CameraAndroidView(lifecycleOwner, lensFacing, analyzer = analyzer)
-            FaceOverlay(
-                faces,
-                imageWidth = analyzer.targetResolution.width,
-                imageHeight = analyzer.targetResolution.height,
-                isFrontCamera = lensFacing == LENS_FACING_FRONT
-            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .padding(all = 16.dp)
+                    .aspectRatio(3 / 4f)
+                    .clip(shape = RoundedCornerShape(16.dp))
+            ) {
+                CameraAndroidView(lifecycleOwner, lensFacing, analyzer = analyzer)
+                FaceOverlay(
+                    faces,
+                    imageWidth = analyzer.targetResolution.width,
+                    imageHeight = analyzer.targetResolution.height,
+                    isFrontCamera = lensFacing == LENS_FACING_FRONT
+                )
+            }
         }
     }
 }

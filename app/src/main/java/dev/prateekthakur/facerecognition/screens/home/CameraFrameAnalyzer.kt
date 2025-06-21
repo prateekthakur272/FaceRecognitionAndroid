@@ -6,6 +6,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
+import dev.prateekthakur.facerecognition.facerecognition.FaceDetectionService
 
 class CameraFrameAnalyzer(
     val targetResolution: Size = Size(480, 640),
@@ -32,13 +33,10 @@ class CameraFrameAnalyzer(
                 }
                 .addOnFailureListener { imageProxy.close() }
                 .addOnCompleteListener { imageProxy.close() }
+
         }
     }
 }
-
-
-
-
 
 
 

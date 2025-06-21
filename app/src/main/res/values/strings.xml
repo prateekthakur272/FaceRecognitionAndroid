@@ -5,4 +5,5 @@
     <string name="no_face_enrolled">No Face Enrolled</string>
     <string name="selected_image">Selected Image</string>
     <string name="face_enrollment">Face Enrollment</string>
+    <string name="enroll_face">Enroll Face</string>
 </resources>
