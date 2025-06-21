@@ -8,4 +8,5 @@ sealed class AppRoutes(val route: String) {
     }
 
     data object HomeScreen: AppRoutes("home")
+    data object FaceEnroll: AppRoutes("enroll")
 }
