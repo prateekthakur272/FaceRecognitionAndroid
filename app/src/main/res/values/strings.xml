@@ -7,4 +7,12 @@
     <string name="face_enrollment">Face Enrollment</string>
     <string name="enroll_face">Enroll Face</string>
     <string name="select_reference_image">Select reference image</string>
+    <string name="no_image_selected_please_go_back_and_enroll">No image selected. Please go back and enroll.</string>
+    <string name="face_not_found">Face not found</string>
+    <string name="matching">Matching %.1f%%</string>
+    <string name="instruction1">1. Select a clear image with clear face.</string>
+    <string name="instruction2">2. Ensure the face is in the center of the image.</string>
+    <string name="instruction3">3. Image with white background is recommended.</string>
+    <string name="clear">Clear</string>
+    <string name="done">Done</string>
 </resources>

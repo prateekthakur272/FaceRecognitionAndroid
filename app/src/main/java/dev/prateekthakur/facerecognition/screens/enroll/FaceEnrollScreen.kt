@@ -53,9 +53,9 @@ fun FaceEnrollScreen(
             })
 
     val instructions = listOf(
-        "1. Select a clear image with clear face.",
-        "2. Ensure the face is in the center of the image.",
-        "3. Image with white background is recommended."
+        stringResource(R.string.instruction1),
+        stringResource(R.string.instruction2),
+        stringResource(R.string.instruction3)
     )
 
     Scaffold(topBar = {
@@ -118,7 +118,7 @@ fun FaceEnrollScreen(
                         onClick = {
                             AppRoutes.navController.navigate(AppRoutes.HomeScreen.route)
                         }) {
-                        Text("Done")
+                        Text(stringResource(R.string.done))
                     }
                     6.Space
                     Button(
@@ -126,7 +126,7 @@ fun FaceEnrollScreen(
                         onClick = {
                             viewModel.setImage(null)
                         }) {
-                        Text("Clear")
+                        Text(stringResource(R.string.clear))
                     }
                 }
             }

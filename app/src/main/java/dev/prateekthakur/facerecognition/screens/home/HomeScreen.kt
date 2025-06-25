@@ -21,9 +21,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.vw_face_recognition_plugin.face_recognition.FaceRecognitionImageAnalyzer
 import dev.prateekthakur.facerecognition.composables.CameraPreview
+import dev.prateekthakur.facerecognition.R
 
 @Composable
 fun HomeScreen(
@@ -36,9 +38,9 @@ fun HomeScreen(
     val message by remember {
         derivedStateOf {
             if (score < 0) {
-                return@derivedStateOf "Face not found"
+                return@derivedStateOf context.getString(R.string.face_not_found)
             }
-            String.format("Matching %.1f%%", score * 100)
+            String.format(context.getString(R.string.matching), score * 100)
         }
     }
 
@@ -46,7 +48,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
-            Text("No image selected. Please go back and enroll.")
+            Text(stringResource(R.string.no_image_selected_please_go_back_and_enroll))
         }
     } else {
         // Remember analyzer across recompositions
@@ -73,7 +75,7 @@ fun HomeScreen(
         ) {
             Image(
                 image.asImageBitmap(),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.selected_image),
                 contentScale = ContentScale.Crop,
             )
         }
