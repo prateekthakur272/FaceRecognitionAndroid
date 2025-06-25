@@ -1,111 +1,143 @@
 package dev.prateekthakur.facerecognition.screens.enroll
 
-import android.graphics.Bitmap
+import FaceEnrollViewModel
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import dev.prateekthakur.facerecognition.R
 import dev.prateekthakur.facerecognition.navigation.AppRoutes
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import dev.prateekthakur.facerecognition.utils.extensions.Space
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FaceEnrollScreen(
-    modifier: Modifier = Modifier, onImageSelected: (Uri) -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: FaceEnrollViewModel,
 ) {
     val context = LocalContext.current
-    var image by remember { mutableStateOf<ImageBitmap?>(null) }
+    val image = viewModel.selectedImageBitmap
 
     val launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent(),
             onResult = { uri: Uri? ->
                 uri?.let {
-                    onImageSelected(it)
-                    context.contentResolver.openInputStream(uri)
-                    val bitmap =
-                        BitmapFactory.decodeStream(context.contentResolver.openInputStream(uri))
-                    image = bitmap.asImageBitmap()
+                    val inputStream = context.contentResolver.openInputStream(it)
+                    inputStream?.let { stream ->
+                        val bitmap = BitmapFactory.decodeStream(stream)
+                        stream.close()
+                        viewModel.setImage(bitmap.rotate(90f))
+                    }
                 }
             })
 
+    val instructions = listOf(
+        "1. Select a clear image with clear face.",
+        "2. Ensure the face is in the center of the image.",
+        "3. Image with white background is recommended."
+    )
+
     Scaffold(topBar = {
         TopAppBar(title = { Text(stringResource(R.string.enroll_face)) })
-    }) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(it)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
+    }) { innerPadding ->
+
+        if (image == null) {
+            Column(
                 modifier = modifier
-                    .aspectRatio(3 / 4f)
-                    .clip(shape = RoundedCornerShape(corner = CornerSize(18.dp)))
-                    .background(color = Color(0xFFD7D7D7))
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+
+                ) {
+                Icon(Icons.Filled.Face, contentDescription = "", modifier = modifier.size(40.dp))
+                Text(
+                    stringResource(R.string.select_reference_image),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                8.Space
+
+                instructions.map {
+                    Text(it, style = MaterialTheme.typography.labelMedium)
+                }
+
+                8.Space
+
+                Button(onClick = { launcher.launch("image/*") }) {
+                    Text(stringResource(R.string.select_image_from_gallery))
+                }
+            }
+        } else {
+
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (image != null) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .aspectRatio(3 / 4f)
+                        .clip(RoundedCornerShape(corner = CornerSize(18.dp)))
+                        .background(Color(0xFFD7D7D7))
+                ) {
                     Image(
-                        bitmap = image!!,
+                        bitmap = image.asImageBitmap(),
                         contentDescription = stringResource(R.string.selected_image),
                         contentScale = ContentScale.FillBounds
                     )
-                } else {
-                    Text(stringResource(R.string.no_face_enrolled))
                 }
-            }
-            Spacer(modifier = modifier.height(12.dp))
-            Button(modifier = modifier.fillMaxWidth(),
-                onClick = {
-                    launcher.launch("image/*")
-                }) {
-                Text(stringResource(R.string.select_image_from_gallery))
-            }
-
-            Spacer(modifier = modifier.height(12.dp))
-            if (image != null) {
-                Button(modifier = modifier.fillMaxWidth(), onClick = {
-                    AppRoutes.navController.navigate(AppRoutes.HomeScreen.route)
-                }) {
-                    Text(stringResource(R.string.check_face))
+                Spacer(modifier = Modifier.height(12.dp))
+                Row {
+                    Button(
+                        modifier = modifier.weight(1f),
+                        onClick = {
+                            AppRoutes.navController.navigate(AppRoutes.HomeScreen.route)
+                        }) {
+                        Text("Done")
+                    }
+                    6.Space
+                    Button(
+                        modifier = modifier.weight(1f),
+                        onClick = {
+                            viewModel.setImage(null)
+                        }) {
+                        Text("Clear")
+                    }
                 }
             }
         }
     }
 }
+
+
+    private fun Bitmap.rotate(fl: Float): Bitmap {
+        val matrix = Matrix().apply {
+            postRotate(fl)
+        }
+        return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+    }

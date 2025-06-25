@@ -6,4 +6,5 @@
     <string name="selected_image">Selected Image</string>
     <string name="face_enrollment">Face Enrollment</string>
     <string name="enroll_face">Enroll Face</string>
+    <string name="select_reference_image">Select reference image</string>
 </resources>
